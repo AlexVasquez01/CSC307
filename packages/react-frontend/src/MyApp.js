@@ -13,11 +13,20 @@ function MyApp() {
     }, [] );
 
     function removeOneCharacter(index) {
-        const updated = characters.filter((character, i) => {
-          return i !== index;
-        });
-        setCharacters(updated);
-    }
+      const idToDelete = characters[index].id;
+      fetch(`http://localhost:8000/users/${idToDelete}`, {
+        method: "DELETE",
+      })
+      .then(response => {
+        if (response.status === 204) {
+          const updated = characters.filter((character, i) => i !== index);
+          setCharacters(updated);
+        } else {
+          throw new Error('Delete operation failed');
+        }
+      })
+      .catch(error => console.log(error));
+  }
 
     function postUser(person) {
         const promise = fetch("Http://localhost:8000/users", {
@@ -38,10 +47,14 @@ function MyApp() {
 
     function updateList(person) { 
       postUser(person)
-        .then(() => setCharacters([...characters, person]))
-        .catch((error) => {
-          console.log(error);
+        .then(response => {
+          if (response.status === 201) {
+            return response.json();
+          }
+          throw new Error('User not created');
         })
+        .then(newUser => setCharacters([...characters, newUser]))
+        .catch(error => console.log(error));
     }
 
       return (

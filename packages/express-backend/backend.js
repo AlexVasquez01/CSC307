@@ -36,22 +36,30 @@ const users = {
 app.use(cors());
 app.use(express.json());
 
+const generateId = () => `${Math.random().toString(10).slice(2,8)}`;
+
 const addUser = (user) => {
-  users["users_list"].push(user);
-  return user;
+  const newUser = { ...user, id: generateId() }; 
+  users["users_list"].push(newUser);
+  return newUser;
 };
+
+app.delete("/users/:id", (req) => {
+  const { id } = req.params;
+  users["users_list"] = users["users_list"].filter(user => user.id !== id);
+});
 
 app.post("/users", (req, res) => {
   const userToAdd = req.body;
-  addUser(userToAdd);
-  res.send();
+  const newUser = addUser(userToAdd);
+  res.status(201).send(newUser); 
 });
 
 const findUserById = (id) =>
   users["users_list"].find((user) => user["id"] === id);
 
 app.get("/users/:id", (req, res) => {
-  const id = req.params["id"]; //or req.params.id
+  const id = req.params["id"]; 
   let result = findUserById(id);
   if (result === undefined) {
     res.status(404).send("Resource not found.");
