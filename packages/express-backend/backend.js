@@ -44,9 +44,16 @@ const addUser = (user) => {
   return newUser;
 };
 
-app.delete("/users/:id", (req) => {
+app.delete("/users/:id", (req, res) => {
   const { id } = req.params;
+  const initialLength = users["users_list"].length;
   users["users_list"] = users["users_list"].filter(user => user.id !== id);
+
+  if (users["users_list"].length < initialLength) {
+    res.status(204).send();
+  } else {
+    res.status(404).send();
+  }
 });
 
 app.post("/users", (req, res) => {
